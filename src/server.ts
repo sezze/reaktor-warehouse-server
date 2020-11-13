@@ -2,11 +2,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import cors from 'cors';
 
 import { getProducts } from './product';
 import Product from './types/Product';
 
 const app = express();
+app.use(cors());
 
 // While fetching new data all simultanious requests can wait for
 // the same data to process
