@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
+import { ParsedQs } from 'qs';
 
-import { legacyApiUrl, maxCacheAge } from './config';
+import { defaultResponseCount, legacyApiUrl, maxCacheAge } from './config';
 import { getAvailabilityMap } from './availability';
 import { makeCache } from './cache';
 
@@ -53,3 +54,41 @@ export const fetchProducts = async (category: string): Promise<Product[] | undef
  */
 export const getProducts = async (category: string): Promise<Product[] | undefined> =>
   cacheMap[category]?.get() || (await fetchProducts(category));
+
+/**
+ * Creates a filtering function to filter products by the given search query (case insensitive)
+ */
+export const bySearchQuery = (search: string) => (p: Product): boolean =>
+  p.name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
+/**
+ * Creates a filtering function to filter products by the given manufacturer
+ */
+export const byManufacturer = (manufacturer: string) => (p: Product): boolean =>
+  p.manufacturer === manufacturer;
+
+/**
+ * Creates a filtering function to filter products by the given availability value
+ */
+export const byAvailability = (availability: string) => (p: Product): boolean =>
+  p.availability === availability;
+
+interface QueryOptions {
+  from: number;
+  to: number;
+  availability?: string;
+  manufacturer?: string;
+  search?: string;
+}
+
+/**
+ *
+ * @param query Request query from Express
+ */
+export const getFilterValues = (query: ParsedQs): QueryOptions => ({
+  from: typeof query.from === 'string' ? parseInt(query.from) : 0,
+  to: typeof query.to === 'string' ? parseInt(query.to) : defaultResponseCount,
+  search: typeof query.search === 'string' ? query.search : undefined,
+  manufacturer: typeof query.manufacturer === 'string' ? query.manufacturer : undefined,
+  availability: typeof query.availability === 'string' ? query.availability : undefined,
+});

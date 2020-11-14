@@ -4,8 +4,15 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 
-import { getProducts } from './product';
+import {
+  getProducts,
+  getFilterValues,
+  byAvailability,
+  byManufacturer,
+  bySearchQuery,
+} from './product';
 import Product from './types/Product';
+import ProductResponse from './types/ProductResponse';
 
 const app = express();
 app.use(cors());
@@ -15,21 +22,27 @@ app.use(cors());
 let currentFetch: Promise<Product[] | undefined> | null = null;
 
 app.get('/products/:category', async (req, res) => {
-  const from = typeof req.query.from === 'string' ? parseInt(req.query.from) : 0;
-  const to = typeof req.query.to === 'string' ? parseInt(req.query.to) : 3;
+  const { from, to, availability, manufacturer, search } = getFilterValues(req.query);
 
   if (!currentFetch) currentFetch = getProducts(req.params.category);
-  const products = await currentFetch;
+  let products = await currentFetch;
   currentFetch = null;
+  if (!products) return res.sendStatus(500);
 
-  products
-    ? res.json({
-        from: Math.max(from, 0),
-        to: Math.min(to, products.length),
-        totalCount: products.length,
-        products: products.slice(from, to),
-      })
-    : res.sendStatus(500);
+  // Filters
+  if (availability) products = products.filter(byAvailability(availability));
+  if (manufacturer) products = products.filter(byManufacturer(manufacturer));
+  if (search) products = products.filter(bySearchQuery(search));
+  products = products.slice(from, to);
+
+  const response: ProductResponse = {
+    from: Math.max(from, 0),
+    to: Math.min(to, products.length),
+    totalCount: products.length,
+    products,
+  };
+
+  res.json(response);
 });
 
 app.listen(process.env.PORT || 8080);
