@@ -68,10 +68,10 @@ export const byManufacturer = (manufacturer: string) => (p: Product): boolean =>
   p.manufacturer === manufacturer;
 
 /**
- * Creates a filtering function to filter products by the given availability value
+ * Creates a filtering function to filter products by the given availability status
  */
 export const byAvailability = (availability: string) => (p: Product): boolean =>
-  p.availability === availability;
+  p.availability === availability || p.availability === 'OUTOFSTOCK';
 
 interface QueryOptions {
   from: number;
