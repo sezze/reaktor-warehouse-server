@@ -8,6 +8,7 @@ import { makeCache } from './cache';
 import LegacyProduct from './types/LegacyProduct';
 import { CacheMap } from './types/Cache';
 import Product from './types/Product';
+import QueryOptions from './types/QueryOptions';
 
 const cacheMap: CacheMap<Product[]> = {};
 
@@ -73,16 +74,8 @@ export const byManufacturer = (manufacturer: string) => (p: Product): boolean =>
 export const byAvailability = (availability: string) => (p: Product): boolean =>
   p.availability === availability || p.availability === 'OUTOFSTOCK';
 
-interface QueryOptions {
-  from: number;
-  to: number;
-  availability?: string;
-  manufacturer?: string;
-  search?: string;
-}
-
 /**
- *
+ * Get filter values from an express request
  * @param query Request query from Express
  */
 export const getFilterValues = (query: ParsedQs): QueryOptions => ({
