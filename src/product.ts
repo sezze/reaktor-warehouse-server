@@ -8,6 +8,7 @@ import { makeCache } from './cache';
 import LegacyProduct from './types/LegacyProduct';
 import { CacheMap } from './types/Cache';
 import Product from './types/Product';
+import QueryOptions from './types/QueryOptions';
 
 const cacheMap: CacheMap<Product[]> = {};
 
@@ -68,21 +69,13 @@ export const byManufacturer = (manufacturer: string) => (p: Product): boolean =>
   p.manufacturer === manufacturer;
 
 /**
- * Creates a filtering function to filter products by the given availability value
+ * Creates a filtering function to filter products by the given availability status
  */
 export const byAvailability = (availability: string) => (p: Product): boolean =>
-  p.availability === availability;
-
-interface QueryOptions {
-  from: number;
-  to: number;
-  availability?: string;
-  manufacturer?: string;
-  search?: string;
-}
+  p.availability === availability || p.availability === 'OUTOFSTOCK';
 
 /**
- *
+ * Get filter values from an express request
  * @param query Request query from Express
  */
 export const getFilterValues = (query: ParsedQs): QueryOptions => ({

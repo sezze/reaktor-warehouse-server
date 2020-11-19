@@ -30,16 +30,17 @@ app.get('/products/:category', async (req, res) => {
   if (!products) return res.sendStatus(500);
 
   // Filters
-  if (availability) products = products.filter(byAvailability(availability));
+  if (availability && availability !== 'INSTOCK')
+    products = products.filter(byAvailability(availability));
   if (manufacturer) products = products.filter(byManufacturer(manufacturer));
   if (search) products = products.filter(bySearchQuery(search));
-  products = products.slice(from, to);
+  const productSlice = products.slice(from, to);
 
   const response: ProductResponse = {
     from: Math.max(from, 0),
     to: Math.min(to, products.length),
     totalCount: products.length,
-    products,
+    products: productSlice,
   };
 
   res.json(response);
